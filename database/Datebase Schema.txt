@@ -1,0 +1,152 @@
+-- =============================================
+-- 图书馆管理系统数据库
+-- 适配中国手机号（11位）
+-- 字符集：utf8mb4（支持中文）
+-- =============================================
+
+-- 创建新数据库
+CREATE DATABASE library
+CHARACTER SET utf8mb4
+COLLATE utf8mb4_general_ci;
+
+USE library;
+
+-- =============================================
+-- 1. 人员表（基表）
+-- =============================================
+CREATE TABLE PERSON
+(
+    ID INT NOT NULL PRIMARY KEY,
+    PNAME VARCHAR(30) NOT NULL,
+    PASSWORD VARCHAR(10) NOT NULL,
+    ADDRESS VARCHAR(30) NOT NULL,
+    PHONE_NO VARCHAR(15) NOT NULL
+);
+
+-- =============================================
+-- 2. 图书表
+-- =============================================
+CREATE TABLE BOOK
+(
+    ID INT NOT NULL PRIMARY KEY,
+    TITLE VARCHAR(30) NOT NULL,
+    AUTHOR VARCHAR(20) NOT NULL,
+    SUBJECT VARCHAR(20) NOT NULL,
+    IS_ISSUED BOOLEAN NOT NULL
+);
+
+-- =============================================
+-- 3. 员工表
+-- =============================================
+CREATE TABLE STAFF
+(
+    S_ID INT NOT NULL PRIMARY KEY,
+    TYPE VARCHAR(10) NOT NULL,
+    SALARY DOUBLE,
+    FOREIGN KEY (S_ID) REFERENCES PERSON(ID)
+);
+
+-- =============================================
+-- 4. 办事员表
+-- =============================================
+CREATE TABLE CLERK
+(
+    C_ID INT NOT NULL PRIMARY KEY,
+    DESK_NO INT NOT NULL,
+    FOREIGN KEY (C_ID) REFERENCES STAFF(S_ID)
+);
+
+-- =============================================
+-- 5. 图书管理员表
+-- =============================================
+CREATE TABLE LIBRARIAN
+(
+    L_ID INT NOT NULL PRIMARY KEY,
+    OFFICE_NO INT NOT NULL,
+    FOREIGN KEY (L_ID) REFERENCES STAFF(S_ID)
+);
+
+-- =============================================
+-- 6. 借阅者表
+-- =============================================
+CREATE TABLE BORROWER
+(
+    B_ID INT NOT NULL PRIMARY KEY,
+    FOREIGN KEY (B_ID) REFERENCES PERSON(ID)
+);
+
+-- =============================================
+-- 7. 借阅记录表
+-- =============================================
+CREATE TABLE LOAN
+(
+    L_ID INT NOT NULL PRIMARY KEY,
+    BORROWER INT NOT NULL,
+    BOOK INT NOT NULL,
+    ISSUER INT NOT NULL,
+    ISS_DATE TIMESTAMP NOT NULL,
+    RECEIVER INT,
+    RET_DATE TIMESTAMP,
+    FINE_PAID BOOLEAN,
+    FOREIGN KEY (BORROWER) REFERENCES BORROWER(B_ID),
+    FOREIGN KEY (ISSUER) REFERENCES STAFF(S_ID),
+    FOREIGN KEY (RECEIVER) REFERENCES STAFF(S_ID),
+    FOREIGN KEY (BOOK) REFERENCES BOOK(ID)
+);
+
+-- =============================================
+-- 8. 借出的书（中间表）
+-- =============================================
+CREATE TABLE BORROWED_BOOK
+(
+    BOOK INT NOT NULL PRIMARY KEY,
+    BORROWER INT NOT NULL,
+    FOREIGN KEY (BORROWER) REFERENCES BORROWER(B_ID),
+    FOREIGN KEY (BOOK) REFERENCES BOOK(ID)
+);
+
+-- =============================================
+-- 9. 预约表
+-- =============================================
+CREATE TABLE ON_HOLD_BOOK
+(
+    REQ_ID INT NOT NULL PRIMARY KEY,
+    BOOK INT NOT NULL,
+    BORROWER INT NOT NULL,
+    REQ_DATE DATE NOT NULL,
+    FOREIGN KEY (BORROWER) REFERENCES BORROWER(B_ID),
+    FOREIGN KEY (BOOK) REFERENCES BOOK(ID)
+);
+
+-- =============================================
+-- 10. 插入测试数据（中国手机号格式）
+-- =============================================
+
+-- 插入人员数据
+INSERT INTO PERSON VALUES (1, '张三', '123', '北京市朝阳区', '13812345678');
+INSERT INTO PERSON VALUES (2, '李四', '123', '上海市浦东新区', '13987654321');
+INSERT INTO PERSON VALUES (3, '王五', '123', '广州市天河区', '15012345678');
+INSERT INTO PERSON VALUES (4, '赵六', '123', '深圳市南山区', '15187654321');
+INSERT INTO PERSON VALUES (5, '管理员', 'lib', '图书馆办公室', '18800000001');
+
+-- 插入借阅者
+INSERT INTO BORROWER VALUES (1);
+INSERT INTO BORROWER VALUES (2);
+INSERT INTO BORROWER VALUES (3);
+INSERT INTO BORROWER VALUES (4);
+
+-- 插入员工
+INSERT INTO STAFF VALUES (5, 'admin', 8000);
+
+-- 插入图书
+INSERT INTO BOOK VALUES (1, 'Java编程思想', 'Bruce Eckel', '编程', FALSE);
+INSERT INTO BOOK VALUES (2, 'Effective Java', 'Joshua Bloch', '编程', FALSE);
+INSERT INTO BOOK VALUES (3, '深入理解Java虚拟机', '周志明', '编程', FALSE);
+INSERT INTO BOOK VALUES (4, 'Spring实战', 'Craig Walls', '框架', FALSE);
+INSERT INTO BOOK VALUES (5, 'MySQL必知必会', 'Ben Forta', '数据库', FALSE);
+
+-- =============================================
+-- 完成
+-- =============================================
+
+

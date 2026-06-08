@@ -1,0 +1,115 @@
+USE library;
+
+-- =============================================
+-- 1. 人员表（PERSON）
+-- 注意：PHONE_NO 是 VARCHAR(15)，必须加引号
+-- =============================================
+INSERT INTO PERSON VALUES (1, '陈建国', 'admin123', '郑州市金水区文化路1号', '13800000001');
+INSERT INTO PERSON VALUES (2, '张丽华', 'clerk123', '郑州市中原区建设路2号', '13800000002');
+INSERT INTO PERSON VALUES (3, '王磊', '123', '郑州市二七区大学路3号', '13800000003');
+INSERT INTO PERSON VALUES (4, '刘洋', '123', '郑州市管城区航海路4号', '13800000004');
+INSERT INTO PERSON VALUES (5, '赵梦琪', '123', '郑州市惠济区英才街5号', '13800000005');
+INSERT INTO PERSON VALUES (6, '孙浩然', '123', '郑州市郑东新区龙子湖6号', '13800000006');
+INSERT INTO PERSON VALUES (7, '周雨欣', '123', '郑州市高新区科学大道7号', '13800000007');
+INSERT INTO PERSON VALUES (8, '吴志远', '123', '郑州市金水区花园路8号', '13800000008');
+INSERT INTO PERSON VALUES (9, '郑晓雯', '123', '郑州市中原区桐柏路9号', '13800000009');
+
+-- =============================================
+-- 2. 员工表（STAFF）
+-- =============================================
+INSERT INTO STAFF VALUES (1, 'Librarian', 8000);
+INSERT INTO STAFF VALUES (2, 'Clerk', 5000);
+
+-- =============================================
+-- 3. 图书管理员表（LIBRARIAN）
+-- =============================================
+INSERT INTO LIBRARIAN VALUES (1, 301);
+
+-- =============================================
+-- 4. 办事员表（CLERK）
+-- =============================================
+INSERT INTO CLERK VALUES (2, 101);
+
+-- =============================================
+-- 5. 借阅者表（BORROWER）
+-- =============================================
+INSERT INTO BORROWER VALUES (3);
+INSERT INTO BORROWER VALUES (4);
+INSERT INTO BORROWER VALUES (5);
+INSERT INTO BORROWER VALUES (6);
+INSERT INTO BORROWER VALUES (7);
+INSERT INTO BORROWER VALUES (8);
+INSERT INTO BORROWER VALUES (9);
+
+-- =============================================
+-- 6. 图书表（BOOK）
+-- IS_ISSUED：FALSE = 0, TRUE = 1
+-- =============================================
+
+-- 计算机类（10本）
+INSERT INTO BOOK VALUES (1, 'Java编程思想', 'Bruce Eckel', '计算机', 0);
+INSERT INTO BOOK VALUES (2, '算法导论', 'Thomas Cormen', '计算机', 0);
+INSERT INTO BOOK VALUES (3, '深入理解计算机系统', 'Randal Bryant', '计算机', 0);
+INSERT INTO BOOK VALUES (4, '数据结构与算法分析', 'Mark Weiss', '计算机', 0);
+INSERT INTO BOOK VALUES (5, '设计模式', 'GoF', '计算机', 0);
+INSERT INTO BOOK VALUES (6, '计算机网络', 'Kurose', '计算机', 0);
+INSERT INTO BOOK VALUES (7, '操作系统概念', 'Silberschatz', '计算机', 0);
+INSERT INTO BOOK VALUES (8, '数据库系统概念', 'Silberschatz', '计算机', 0);
+INSERT INTO BOOK VALUES (9, '编译原理', 'Alfred Aho', '计算机', 0);
+INSERT INTO BOOK VALUES (10, 'Python编程', 'Eric Matthes', '计算机', 0);
+
+-- 教材类（8本）
+INSERT INTO BOOK VALUES (11, '计算机网络', '谢希仁', '教材', 0);
+INSERT INTO BOOK VALUES (12, '数据库系统概论', '王珊', '教材', 0);
+INSERT INTO BOOK VALUES (13, '软件工程导论', '张海藩', '教材', 0);
+INSERT INTO BOOK VALUES (14, '高等数学', '同济大学', '教材', 0);
+INSERT INTO BOOK VALUES (15, '线性代数', '同济大学', '教材', 0);
+INSERT INTO BOOK VALUES (16, '概率论与数理统计', '盛骤', '教材', 0);
+INSERT INTO BOOK VALUES (17, '大学物理', '张三慧', '教材', 0);
+INSERT INTO BOOK VALUES (18, '离散数学', 'Kenneth Rosen', '教材', 0);
+
+-- 文学类（10本）
+INSERT INTO BOOK VALUES (19, '活着', '余华', '文学', 0);
+INSERT INTO BOOK VALUES (20, '三体', '刘慈欣', '文学', 0);
+INSERT INTO BOOK VALUES (21, '百年孤独', '马尔克斯', '文学', 0);
+INSERT INTO BOOK VALUES (22, '围城', '钱钟书', '文学', 0);
+INSERT INTO BOOK VALUES (23, '红楼梦', '曹雪芹', '文学', 0);
+INSERT INTO BOOK VALUES (24, '骆驼祥子', '老舍', '文学', 0);
+INSERT INTO BOOK VALUES (25, '挪威的森林', '村上春树', '文学', 0);
+INSERT INTO BOOK VALUES (26, '平凡的世界', '路遥', '文学', 0);
+INSERT INTO BOOK VALUES (27, '白鹿原', '陈忠实', '文学', 0);
+INSERT INTO BOOK VALUES (28, '追风筝的人', '胡赛尼', '文学', 0);
+
+-- 历史类（6本）
+INSERT INTO BOOK VALUES (29, '万历十五年', '黄仁宇', '历史', 0);
+INSERT INTO BOOK VALUES (30, '人类简史', '赫拉利', '历史', 0);
+INSERT INTO BOOK VALUES (31, '全球通史', '斯塔夫里阿诺斯', '历史', 0);
+INSERT INTO BOOK VALUES (32, '明朝那些事儿', '当年明月', '历史', 0);
+INSERT INTO BOOK VALUES (33, '史记', '司马迁', '历史', 0);
+INSERT INTO BOOK VALUES (34, '资治通鉴', '司马光', '历史', 0);
+
+-- 科普类（5本）
+INSERT INTO BOOK VALUES (35, '时间简史', '霍金', '科普', 0);
+INSERT INTO BOOK VALUES (36, '上帝掷骰子吗', '曹天元', '科普', 0);
+INSERT INTO BOOK VALUES (37, '从一到无穷大', '伽莫夫', '科普', 0);
+INSERT INTO BOOK VALUES (38, '自私的基因', '道金斯', '科普', 0);
+INSERT INTO BOOK VALUES (39, '万物简史', '比尔布莱森', '科普', 0);
+
+-- 英语类（3本）
+INSERT INTO BOOK VALUES (40, '英语词汇速记大全', '俞敏洪', '英语', 0);
+INSERT INTO BOOK VALUES (41, '新概念英语3', '亚历山大', '英语', 0);
+INSERT INTO BOOK VALUES (42, '托福词汇10000', '张红岩', '英语', 0);
+
+-- 经管类（3本）
+INSERT INTO BOOK VALUES (43, '国富论', '亚当斯密', '经管', 0);
+INSERT INTO BOOK VALUES (44, '经济学原理', '曼昆', '经管', 0);
+INSERT INTO BOOK VALUES (45, '卓有成效的管理者', '德鲁克', '经管', 0);
+
+-- 心理类（3本）
+INSERT INTO BOOK VALUES (46, '社会心理学', '迈尔斯', '心理', 0);
+INSERT INTO BOOK VALUES (47, '乌合之众', '勒庞', '心理', 0);
+INSERT INTO BOOK VALUES (48, '思考快与慢', '卡尼曼', '心理', 0);
+
+-- 哲学类（2本）
+INSERT INTO BOOK VALUES (49, '苏菲的世界', '贾德', '哲学', 0);
+INSERT INTO BOOK VALUES (50, '中国哲学简史', '冯友兰', '哲学', 0);
