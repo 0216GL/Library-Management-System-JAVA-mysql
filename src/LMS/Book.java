@@ -5,15 +5,14 @@ import java.io.*;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 
-import static LMS.HoldRequestOperations.holdRequests;
-
 public class Book {
 
     private final String isbn;    //ISBN是图书的唯一标识符（国际标准书号）
     private String title;         // 书名
     private String subject;       // 类目
     private String author;        // 作者
-    private boolean isIssued;        // 是否正在外借中
+    private boolean isIssued;     // 是否正在外借中
+    private final ArrayList<HoldRequest> holdRequests;  // 本书的预约队列
   
     public Book(String isbn, String t, String s, String a, boolean issued)
     {
@@ -22,27 +21,28 @@ public class Book {
         subject = s;
         author = a;
         isIssued = issued;
+        this.holdRequests = new ArrayList<>();
     }
 
 
     // 打印所有图书预约列表
-    public void printHoldRequests(HoldRequestOperations list)
+    public void printHoldRequests()
     {
-        if (!list.isEmpty())
+        if (!holdRequests.isEmpty())
         { 
-            System.out.println("\n现存所有图书预约列表为: ");
+            System.out.println("\n《" + title + "》的预约列表（" + holdRequests.size() + "/3）: ");
             System.out.println("---------------------------------------------------------------------------------------------------------------------------------------");            
-            System.out.println("ISBN\t\t书名\t\t\t预约者\t\t\t预约日期");
+            System.out.println("序号\t\t预约者\t\t\t预约日期");
             System.out.println("---------------------------------------------------------------------------------------------------------------------------------------");
             
-            for (int i = 0; i < list.size(); i++)
+            for (int i = 0; i < holdRequests.size(); i++)
             {                      
-                System.out.print(i + "-" + "\t\t");
-                list.get(i).print();
+                System.out.print((i+1) + "\t\t");
+                holdRequests.get(i).print();
             }
         }
         else
-            System.out.println("\n没有正在进行的预约。");
+            System.out.println("\n《" + title + "》目前没有预约。");
     }
     
     // 打印图书信息
@@ -147,7 +147,7 @@ public class Book {
     {
         HoldRequest hr = new HoldRequest(bor,this, new Date());
 
-        HoldRequestOperations.addHoldRequest(hr);
+        holdRequests.add(hr);
         bor.addHoldRequest(hr);
         
         System.out.println("\nThe book " + title + " has been successfully placed on hold by borrower " + bor.getName() + ".\n");
@@ -158,6 +158,13 @@ public class Book {
     //  图书预约/保留请求
     public void makeHoldRequest(Borrower borrower)
     {
+        // 检查预约数量是否已达上限
+        if (holdRequests.size() >= 3)
+        {
+            System.out.println("\n抱歉，《" + title + "》的预约已满（最多3人）。");
+            return;
+        }
+        
         boolean makeRequest = true;
         //  如果一个借书人已经借了这本书，那他就不能再预约这本书了。他必须通过"续借"来延长还书截止日期。
         for(int i=0;i<borrower.getBorrowedBooks().size();i++)
@@ -171,11 +178,9 @@ public class Book {
         
         
         //   如果一个人未借，但已预约过就不让二次预约。
-        for (int i = 0; i < holdRequests.size(); i++)
-        {
-            if ((holdRequests.get(i).getBorrower() == borrower))
-            {
-                makeRequest = false;    
+        for (HoldRequest holdRequest : holdRequests) {
+            if ((holdRequest.getBorrower() == borrower)) {
+                makeRequest = false;
                 break;
             }
         }
@@ -192,7 +197,7 @@ public class Book {
     // 移除指定的预约请求
     public void serviceHoldRequest(HoldRequest hr)
     {
-        HoldRequestOperations.removeHoldRequest();
+        holdRequests.remove(hr);
         hr.getBorrower().removeHoldRequest(hr);
     }
 
@@ -212,22 +217,35 @@ public class Book {
 
             if(days > Library.getInstance().getHoldRequestExpiry())
             {
-                HoldRequestOperations.removeHoldRequestAt(i);
+                holdRequests.remove(i);
                 hr.getBorrower().removeHoldRequest(hr);
             }
         }
 
+        // 始终显示当前预约队列
+        printHoldRequests();
+
         if (isIssued)
         {
             System.out.println("\n这本书:  " + title + " 已经被借走了。");
-            System.out.println("您要预约这本书吗 (y/n)");
-             
-            Scanner sc = new Scanner(System.in);
-            String choice = sc.next();
             
-            if (choice.equals("y"))
-            {                
-                makeHoldRequest(borrower);
+            // 检查是否可以预约
+            if (holdRequests.size() < 3)
+            {
+                System.out.println("\n当前预约人数：" + holdRequests.size() + "/3");
+                System.out.println("您要预约这本书吗？(y/n)");
+                 
+                Scanner sc = new Scanner(System.in);
+                String choice = sc.next();
+                
+                if (choice.equals("y"))
+                {                
+                    makeHoldRequest(borrower);
+                }
+            }
+            else
+            {
+                System.out.println("\n预约已满，无法继续预约。");
             }
         }
         
@@ -236,47 +254,56 @@ public class Book {
             if (!holdRequests.isEmpty())
             {
                 boolean hasRequest = false;
-                
-                for (int i = 0; i < holdRequests.size() && !hasRequest; i++)
-                {
-                    if (holdRequests.get(i).getBorrower() == borrower) {
+
+                for (HoldRequest holdRequest : holdRequests) {
+                    if (holdRequest.getBorrower() == borrower) {
                         hasRequest = true;
                         break;
                     }
-                        
                 }
                 
                 if (hasRequest)
-                {
-                    //If this particular borrower has the earliest request for this book
+                { 
+                    // 如果以前预约过这本书，并且是该用户最早的预约，那么就移除该预约。
+                    
                     if (holdRequests.get(0).getBorrower() == borrower)
                         serviceHoldRequest(holdRequests.get(0));
 
                     else
                     {
-                        System.out.println("\nSorry some other users have requested for this book earlier than you. So you have to wait until their hold requests are processed.");
+                        System.out.println("\n抱歉，其他用户已经提前预约了此书，所以您暂时不能借阅此书。");
                         return;
                     }
                 }
                 else
                 {
-                    System.out.println("\nSome users have already placed this book on request and you haven't, so the book can't be issued to you.");
+                    System.out.println("\n已有用户预约了这本书，而你没有预约，所以不能借给你。");
                     
-                    System.out.println("Would you like to place the book on hold? (y/n)");
-
-                    Scanner sc = new Scanner(System.in);
-                    String choice = sc.next();
-                    
-                    if (choice.equals("y"))
+                    // 检查是否可以预约
+                    if (holdRequests.size() < 3)
                     {
-                        makeHoldRequest(borrower); 
-                    }                    
+                        System.out.println("\n当前预约人数：" + holdRequests.size() + "/3");
+                        System.out.println("您要预约这本书吗？(y/n)");
+
+                        Scanner sc = new Scanner(System.in);
+                        String choice = sc.next();
+                        
+                        if (choice.equals("y"))
+                        {
+                            makeHoldRequest(borrower); 
+                        }
+                    }
+                    else
+                    {
+                        System.out.println("\n预约已满，无法继续预约。");
+                    }
                     
                     return;
                 }               
             }
-                        
-            //If there are no hold requests for this book, then simply issue the book.            
+            
+            //如果没有预约请求，那么就直接借出
+                    
             setIssuedStatus(true);
             
             Loan iHistory = new Loan(borrower,this,staff,null,new Date(),null,false);
@@ -284,13 +311,13 @@ public class Book {
             Library.getInstance().addLoan(iHistory);
             borrower.addBorrowedBook(iHistory);
                                     
-            System.out.println("\nThe book " + title + " is successfully issued to " + borrower.getName() + ".");
-            System.out.println("\nIssued by: " + staff.getName());            
+            System.out.println("\n这本书 " + title + " 被借出去了。\n借书人 : " + borrower.getName() + ".");
+            System.out.println("\n经办人: " + staff.getName());            
         }
     }
         
         
-    // Returning a Book
+    // 还书
     public void returnBook(Borrower borrower, Loan l, Staff staff)
     {
         l.getBook().setIssuedStatus(false);        
