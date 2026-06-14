@@ -150,7 +150,7 @@ public class Book {
         holdRequests.add(hr);
         bor.addHoldRequest(hr);
         
-        System.out.println("\nThe book " + title + " has been successfully placed on hold by borrower " + bor.getName() + ".\n");
+        System.out.println("\n图书 " + title + " 被预约成功。   预约人 :  " + bor.getName() + ".\n");
     }
     
     
@@ -253,25 +253,26 @@ public class Book {
         {               
             if (!holdRequests.isEmpty())
             {
-                boolean hasRequest = false;
-
-                for (HoldRequest holdRequest : holdRequests) {
-                    if (holdRequest.getBorrower() == borrower) {
-                        hasRequest = true;
+                // ✅ 修复：检查当前借阅者是否在预约队列中
+                int borrowerPosition = -1;
+                for (int i = 0; i < holdRequests.size(); i++) {
+                    if (holdRequests.get(i).getBorrower() == borrower) {
+                        borrowerPosition = i;
                         break;
                     }
                 }
                 
-                if (hasRequest)
+                if (borrowerPosition != -1)
                 { 
-                    // 如果以前预约过这本书，并且是该用户最早的预约，那么就移除该预约。
-                    
-                    if (holdRequests.get(0).getBorrower() == borrower)
+                    // ✅ 修复：只有当借阅者是第一个预约者时才允许借书
+                    if (borrowerPosition == 0)
+                    {
                         serviceHoldRequest(holdRequests.get(0));
-
+                    }
                     else
                     {
                         System.out.println("\n抱歉，其他用户已经提前预约了此书，所以您暂时不能借阅此书。");
+                        System.out.println("您在预约队列中的位置：" + (borrowerPosition + 1));
                         return;
                     }
                 }
@@ -328,8 +329,8 @@ public class Book {
         
         l.payFine();
         
-        System.out.println("\nThe book " + l.getBook().getTitle() + " is successfully returned by " + borrower.getName() + ".");
-        System.out.println("\nReceived by: " + staff.getName());            
+        System.out.println("\n图书 " + l.getBook().getTitle() + " 还书成功。  还书人 :  " + borrower.getName() + ".");
+        System.out.println("\n办理员工: " + staff.getName());
     }
     
 }   // Book Class Closed

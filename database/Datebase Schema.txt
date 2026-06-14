@@ -2,6 +2,7 @@
 -- 图书馆管理系统数据库
 -- 适配中国手机号（11位）
 -- 字符集：utf8mb4（支持中文）
+-- 图书使用ISBN作为唯一标识符
 -- =============================================
 
 -- 创建新数据库
@@ -28,7 +29,7 @@ CREATE TABLE PERSON
 -- =============================================
 CREATE TABLE BOOK
 (
-    ID INT NOT NULL PRIMARY KEY,
+    ISBN VARCHAR(20) NOT NULL PRIMARY KEY COMMENT '国际标准书号',
     TITLE VARCHAR(30) NOT NULL,
     AUTHOR VARCHAR(20) NOT NULL,
     SUBJECT VARCHAR(20) NOT NULL,
@@ -82,7 +83,7 @@ CREATE TABLE LOAN
 (
     L_ID INT NOT NULL PRIMARY KEY,
     BORROWER INT NOT NULL,
-    BOOK INT NOT NULL,
+    BOOK VARCHAR(20) NOT NULL COMMENT '图书ISBN',
     ISSUER INT NOT NULL,
     ISS_DATE TIMESTAMP NOT NULL,
     RECEIVER INT,
@@ -91,7 +92,7 @@ CREATE TABLE LOAN
     FOREIGN KEY (BORROWER) REFERENCES BORROWER(B_ID),
     FOREIGN KEY (ISSUER) REFERENCES STAFF(S_ID),
     FOREIGN KEY (RECEIVER) REFERENCES STAFF(S_ID),
-    FOREIGN KEY (BOOK) REFERENCES BOOK(ID)
+    FOREIGN KEY (BOOK) REFERENCES BOOK(ISBN)
 );
 
 -- =============================================
@@ -99,10 +100,10 @@ CREATE TABLE LOAN
 -- =============================================
 CREATE TABLE BORROWED_BOOK
 (
-    BOOK INT NOT NULL PRIMARY KEY,
+    BOOK VARCHAR(20) NOT NULL PRIMARY KEY COMMENT '图书ISBN',
     BORROWER INT NOT NULL,
     FOREIGN KEY (BORROWER) REFERENCES BORROWER(B_ID),
-    FOREIGN KEY (BOOK) REFERENCES BOOK(ID)
+    FOREIGN KEY (BOOK) REFERENCES BOOK(ISBN)
 );
 
 -- =============================================
@@ -111,15 +112,15 @@ CREATE TABLE BORROWED_BOOK
 CREATE TABLE ON_HOLD_BOOK
 (
     REQ_ID INT NOT NULL PRIMARY KEY,
-    BOOK INT NOT NULL,
+    BOOK VARCHAR(20) NOT NULL COMMENT '图书ISBN',
     BORROWER INT NOT NULL,
     REQ_DATE DATE NOT NULL,
     FOREIGN KEY (BORROWER) REFERENCES BORROWER(B_ID),
-    FOREIGN KEY (BOOK) REFERENCES BOOK(ID)
+    FOREIGN KEY (BOOK) REFERENCES BOOK(ISBN)
 );
 
 -- =============================================
--- 10. 插入测试数据（中国手机号格式）
+-- 10. 插入测试数据（中国手机号格式 + ISBN编码）
 -- =============================================
 
 -- 插入人员数据
@@ -138,15 +139,16 @@ INSERT INTO BORROWER VALUES (4);
 -- 插入员工
 INSERT INTO STAFF VALUES (5, 'admin', 8000);
 
--- 插入图书
-INSERT INTO BOOK VALUES (1, 'Java编程思想', 'Bruce Eckel', '编程', FALSE);
-INSERT INTO BOOK VALUES (2, 'Effective Java', 'Joshua Bloch', '编程', FALSE);
-INSERT INTO BOOK VALUES (3, '深入理解Java虚拟机', '周志明', '编程', FALSE);
-INSERT INTO BOOK VALUES (4, 'Spring实战', 'Craig Walls', '框架', FALSE);
-INSERT INTO BOOK VALUES (5, 'MySQL必知必会', 'Ben Forta', '数据库', FALSE);
+--插入图书
+INSERT INTO BOOK VALUES ('978-7-111-12345-1', 'Java编程思想', 'Bruce Eckel', '编程', FALSE);
+INSERT INTO BOOK VALUES ('978-7-111-12345-2', 'Effective Java', 'Joshua Bloch', '编程', FALSE);
+INSERT INTO BOOK VALUES ('978-7-111-12345-3', '深入理解Java虚拟机', '周志明', '编程', FALSE);
+INSERT INTO BOOK VALUES ('978-7-111-12345-4', 'Spring实战', 'Craig Walls', '框架', FALSE);
+INSERT INTO BOOK VALUES ('978-7-111-12345-5', 'MySQL必知必会', 'Ben Forta', '数据库', FALSE);
 
 -- =============================================
 -- 完成
 -- =============================================
+
 
 

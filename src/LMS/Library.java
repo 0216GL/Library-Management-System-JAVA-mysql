@@ -1,7 +1,5 @@
 package LMS;
 
-
-// Including Header Files.
 import java.io.*;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -18,22 +16,19 @@ import java.util.logging.Logger;
 
 public class Library {
 
-    private String name;                                // name of library
-    public static Librarian librarian;                        // object of Librarian (only one)
-    public static ArrayList <Person> persons;                 // all clerks and borrowers
-    private ArrayList <Book> booksInLibrary;            // all books in library are here!
+    private String name;                                // 图书馆名称
+    public static Librarian librarian;                  // 馆长对象（唯一）
+    public static ArrayList <Person> persons;           // 所有人员（职员和借阅者）
+    private final ArrayList <Book> booksInLibrary;            // 馆藏所有图书
 
-    private ArrayList <Loan> loans;                     // history of all books which have been issued
+    private final ArrayList <Loan> loans;                     // 所有借阅历史记录
 
-    public int book_return_deadline;                   //return deadline after which fine will be generated each day
-    public double per_day_fine;
+    public int book_return_deadline;                    // 归还期限（超过此期限将产生罚款）
+    public double per_day_fine;                         // 每日罚款金额
 
-    public int hold_request_expiry;                    //number of days after which a hold request will expire
-    //Created object of the hold request operations
-    private HoldRequestOperations holdRequestsOperations =new HoldRequestOperations();
+    public int hold_request_expiry;                     // 预约有效期（天数）
 
-
-    /*----Following Singleton Design Pattern (Lazy Instantiation)------------*/
+    /*----采用单例设计模式（懒汉式）------------*/
     private static Library obj;
 
     public static Library getInstance(){
@@ -44,18 +39,19 @@ public class Library {
     }
     /*---------------------------------------------------------------------*/
 
-    private Library()   // default cons.
+    private Library()   // 默认构造函数
     {
         name = null;
         librarian = null;
-        persons = new ArrayList();
 
-        booksInLibrary = new ArrayList();
-        loans = new ArrayList();
+        persons = new ArrayList<>();
+
+        booksInLibrary = new ArrayList<>();
+        loans = new ArrayList<>();
     }
 
 
-    /*------------Setter FUNCs.------------*/
+    /*------------Setter 方法------------*/
 
     public void setReturnDeadline(int deadline)
     {
@@ -76,13 +72,13 @@ public class Library {
 
 
 
-    // Setter Func.
+    // 设置图书馆名称
     public void setName(String n)
     {
         name = n;
     }
 
-    /*-----------Getter FUNCs.------------*/
+    /*-----------Getter 方法------------*/
 
     public int getHoldRequestExpiry()
     {
@@ -111,7 +107,7 @@ public class Library {
 
     /*---------------------------------------*/
 
-    /*-----Adding other People in Library----*/
+    /*-----添加人员到图书馆----*/
 
     public void addClerk(Clerk c)
     {
@@ -131,10 +127,14 @@ public class Library {
 
     /*----------------------------------------------*/
 
-    /*-----------Finding People in Library--------------*/
+    /*-----------在图书馆中查找人员--------------*/
+    
+    /**
+     * 根据ID查找借阅者
+     */
     public Borrower findBorrower()
     {
-        System.out.println("\nEnter Borrower's ID: ");
+        System.out.println("\n请输入借阅者ID: ");
 
         int id = 0;
 
@@ -145,22 +145,24 @@ public class Library {
         }
         catch (java.util.InputMismatchException e)
         {
-            System.out.println("\nInvalid Input");
+            System.out.println("\n输入无效");
         }
 
-        for (int i = 0; i < persons.size(); i++)
-        {
-            if (persons.get(i).getID() == id && persons.get(i).getClass().getSimpleName().equals("Borrower"))
-                return (Borrower)(persons.get(i));
+        for (Person person : persons) {
+            if (person.getID() == id && person.getClass().getSimpleName().equals("Borrower"))
+                return (Borrower) person;
         }
 
-        System.out.println("\nSorry this ID didn't match any Borrower's ID.");
+        System.out.println("\n抱歉，未找到匹配的借阅者ID。");
         return null;
     }
 
+    /**
+     * 根据ID查找职员
+     */
     public Clerk findClerk()
     {
-        System.out.println("\nEnter Clerk's ID: ");
+        System.out.println("\n请输入职员ID: ");
 
         int id = 0;
 
@@ -171,35 +173,33 @@ public class Library {
         }
         catch (java.util.InputMismatchException e)
         {
-            System.out.println("\nInvalid Input");
+            System.out.println("\n输入无效");
         }
 
-        for (int i = 0; i < persons.size(); i++)
-        {
-            if (persons.get(i).getID() == id && persons.get(i).getClass().getSimpleName().equals("Clerk"))
-                return (Clerk)(persons.get(i));
+        for (Person person : persons) {
+            if (person.getID() == id && person.getClass().getSimpleName().equals("Clerk"))
+                return (Clerk) person;
         }
 
-        System.out.println("\nSorry this ID didn't match any Clerk's ID.");
+        System.out.println("\n抱歉，未找到匹配的职员ID。");
         return null;
     }
 
-    /*------- FUNCS. on Books In Library--------------*/
+    /*------- 图书管理操作--------------*/
+    
+    /**
+     * 添加图书到图书馆
+     */
     public void addBookinLibrary(Book b)
     {
         booksInLibrary.add(b);
     }
 
-    //When this function is called, only the pointer of the book placed in booksInLibrary is removed. But the real object of book
-    //is still there in memory because pointers of that book placed in IssuedBooks and ReturnedBooks are still pointing to that book. And we
-    //are maintaining those pointers so that we can maintain history.
-    //But if we donot want to maintain history then we can delete those pointers placed in IssuedBooks and ReturnedBooks as well which are
-    //pointing to that book. In this way the book will be really removed from memory.
     public void removeBookfromLibrary(Book b)
     {
         boolean delete = true;
 
-        //Checking if this book is currently borrowed by some borrower
+        // 检查该书是否正被某人借阅
         for (int i = 0; i < persons.size() && delete; i++)
         {
             if (persons.get(i).getClass().getSimpleName().equals("Borrower"))
@@ -211,7 +211,7 @@ public class Library {
                     if (borBooks.get(j).getBook() == b)
                     {
                         delete = false;
-                        System.out.println("This particular book is currently borrowed by some borrower.");
+                        System.out.println("这本书当前正被某位借阅者借走。");
                     }
                 }
             }
@@ -219,13 +219,13 @@ public class Library {
 
         if (delete)
         {
-            System.out.println("\nCurrently this book is not borrowed by anyone.");
+            System.out.println("\n当前无人借阅此书。");
             ArrayList<HoldRequest> hRequests = b.getHoldRequests();
 
             if(!hRequests.isEmpty())
             {
-                System.out.println("\nThis book might be on hold requests by some borrowers. Deleting this book will delete the relevant hold requests too.");
-                System.out.println("Do you still want to delete the book? (y/n)");
+                System.out.println("\n此书可能有借阅者的预约请求。删除图书将同时删除相关预约。");
+                System.out.println("确定要删除此书吗？(y/n)");
 
                 Scanner sc = new Scanner(System.in);
 
@@ -237,39 +237,40 @@ public class Library {
                     {
                         if(choice.equals("n"))
                         {
-                            System.out.println("\nDelete Unsuccessful.");
+                            System.out.println("\n删除失败。");
                             return;
                         }
                         else
                         {
-                            //Empty the books hold request array
-                            //Delete the hold request from the borrowers too
+                            // 清空图书的预约列表
+                            // 同时从借阅者处删除预约
                             for (int i = 0; i < hRequests.size() && delete; i++)
                             {
                                 HoldRequest hr = hRequests.get(i);
                                 hr.getBorrower().removeHoldRequest(hr);
-                                holdRequestsOperations.removeHoldRequest();
                             }
                         }
                     }
                     else
-                        System.out.println("Invalid Input. Enter (y/n): ");
+                        System.out.println("输入无效，请输入 (y/n): ");
                 }
 
             }
             else
-                System.out.println("This book has no hold requests.");
+                System.out.println("此书没有预约请求。");
 
             booksInLibrary.remove(b);
-            System.out.println("The book is successfully removed.");
+            System.out.println("图书已成功删除。");
         }
         else
-            System.out.println("\nDelete Unsuccessful.");
+            System.out.println("\n删除失败。");
     }
 
 
 
-    // Searching Books on basis of title, Subject or Author
+    /**
+     * 按书名、主题或作者搜索图书
+     */
     public ArrayList<Book> searchForBooks() throws IOException
     {
         String choice;
@@ -280,64 +281,56 @@ public class Library {
 
         while (true)
         {
-            System.out.println("\nEnter either '1' or '2' or '3' for search by Title, Subject or Author of Book respectively: ");
+            System.out.println("\n请输入 '1' 或 '2' 或 '3' 分别按书名、主题或作者搜索: ");
             choice = sc.next();
 
             if (choice.equals("1") || choice.equals("2") || choice.equals("3"))
                 break;
             else
-                System.out.println("\nWrong Input!");
+                System.out.println("\n输入错误！");
         }
 
         if (choice.equals("1"))
         {
-            System.out.println("\nEnter the Title of the Book: ");
+            System.out.println("\n请输入书名: ");
             title = reader.readLine();
         }
 
         else if (choice.equals("2"))
         {
-            System.out.println("\nEnter the Subject of the Book: ");
+            System.out.println("\n请输入主题: ");
             subject = reader.readLine();
         }
 
         else
         {
-            System.out.println("\nEnter the Author of the Book: ");
+            System.out.println("\n请输入作者: ");
             author = reader.readLine();
         }
 
-        ArrayList<Book> matchedBooks = new ArrayList();
+        ArrayList<Book> matchedBooks = new ArrayList<>();
 
-        //Retrieving all the books which matched the user's search query
-        for(int i = 0; i < booksInLibrary.size(); i++)
-        {
-            Book b = booksInLibrary.get(i);
-
-            if (choice.equals("1"))
-            {
+        // 检索所有匹配用户搜索条件的图书
+        for (Book b : booksInLibrary) {
+            if (choice.equals("1")) {
                 if (b.getTitle().equals(title))
                     matchedBooks.add(b);
-            }
-            else if (choice.equals("2"))
-            {
+            } else if (choice.equals("2")) {
                 if (b.getSubject().equals(subject))
                     matchedBooks.add(b);
-            }
-            else
-            {
+            } else {
                 if (b.getAuthor().equals(author))
                     matchedBooks.add(b);
             }
         }
 
-        //Printing all the matched Books
+        // 打印所有匹配的图书
         if (!matchedBooks.isEmpty())
         {
-            System.out.println("\nThese books are found: \n");
+            System.out.println("\n找到以下图书: \n");
 
             System.out.println("------------------------------------------------------------------------------");
-            System.out.println("No.\t\tTitle\t\t\tAuthor\t\t\tSubject");
+            System.out.println("序号\t\t书名\t\t\t作者\t\t\t主题");
             System.out.println("------------------------------------------------------------------------------");
 
             for (int i = 0; i < matchedBooks.size(); i++)
@@ -351,22 +344,24 @@ public class Library {
         }
         else
         {
-            System.out.println("\nSorry. No Books were found related to your query.");
+            System.out.println("\n抱歉，未找到相关图书。");
             return null;
         }
     }
 
 
 
-    // View Info of all Books in Library
+    /**
+     * 查看图书馆所有图书信息
+     */
      public void viewAllBooks()
     {
         if (!booksInLibrary.isEmpty())
         {
-            System.out.println("\nBooks are: ");
+            System.out.println("\n图书列表: ");
 
             System.out.println("------------------------------------------------------------------------------");
-            System.out.println("No.\t\tTitle\t\t\tAuthor\t\t\tSubject");
+            System.out.println("序号\t\t书名\t\t\t作者\t\t\t主题");
             System.out.println("------------------------------------------------------------------------------");
 
             for (int i = 0; i < booksInLibrary.size(); i++)
@@ -377,15 +372,17 @@ public class Library {
             }
         }
         else
-            System.out.println("\nCurrently, Library has no books.");
+            System.out.println("\n当前图书馆没有藏书。");
     }
 
 
-    //Computes total fine for all loans of a borrower
+    /**
+     * 计算某借阅者所有借阅记录的总罚款
+     */
     public double computeFine2(Borrower borrower)
     {
         System.out.println("---------------------------------------------------------------------------------------------------------------------------------------------------------------------");
-        System.out.println("No.\t\tBook's Title\t\tBorrower's Name\t\t\tIssued Date\t\t\tReturned Date\t\t\t\tFine(Rs)");
+        System.out.println("序号\t\t书名\t\t\t借阅者\t\t\t借出日期\t\t\t归还日期\t\t\t罚款(元)");
         System.out.println("-------------------------------------------------------------------------------------------------------------------------------------------------------------------");
 
         double totalFine = 0;
@@ -408,19 +405,22 @@ public class Library {
     }
 
 
+    /**
+     * 创建人员（借阅者/职员/馆长）
+     */
     public void createPerson(char x)
     {
         Scanner sc = new Scanner(System.in);
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 
-        System.out.println("\nEnter Name: ");
+        System.out.println("\n请输入姓名: ");
         String n = "";
         try {
             n = reader.readLine();
         } catch (IOException ex) {
             Logger.getLogger(Library.class.getName()).log(Level.SEVERE, null, ex);
         }
-        System.out.println("Enter Address: ");
+        System.out.println("请输入地址: ");
         String address = "";
         try {
             address = reader.readLine();
@@ -431,84 +431,90 @@ public class Library {
         String phone = "";
 
         try{
-            System.out.println("Enter Phone Number: ");
+            System.out.println("请输入电话号码: ");
             phone = sc.next();
         }
         catch (java.util.InputMismatchException e)
         {
-            System.out.println("\nInvalid Input.");
+            System.out.println("\n输入无效。");
         }
 
-        //If clerk is to be created
+        // 创建职员
         if (x == 'c')
         {
             double salary = 0;
 
             try{
-                System.out.println("Enter Salary: ");
+                System.out.println("请输入工资: ");
                 salary = sc.nextDouble();
             }
             catch (java.util.InputMismatchException e)
             {
-                System.out.println("\nInvalid Input.");
+                System.out.println("\n输入无效。");
             }
 
             Clerk c = new Clerk(-1,n,address,phone,salary,-1);
             addClerk(c);
 
-            System.out.println("\nClerk with name " + n + " created successfully.");
-            System.out.println("\nYour ID is : " + c.getID());
-            System.out.println("Your Password is : " + c.getPassword());
+            System.out.println("\n职员 " + n + " 创建成功。");
+            System.out.println("\n您的ID是: " + c.getID());
+            System.out.println("您的密码是: " + c.getPassword());
         }
 
-        //If librarian is to be created
+        // 创建馆长
         else if (x == 'l')
         {
             double salary = 0;
             try{
-                System.out.println("Enter Salary: ");
+                System.out.println("请输入工资: ");
                 salary = sc.nextDouble();
             }
             catch (java.util.InputMismatchException e)
             {
-                System.out.println("\nInvalid Input.");
+                System.out.println("\n输入无效。");
             }
 
             Librarian l = new Librarian(-1,n,address,phone,salary,-1);
             if(Librarian.addLibrarian(l))
             {
-                System.out.println("\nLibrarian with name " + n + " created successfully.");
-                System.out.println("\nYour ID is : " + l.getID());
-                System.out.println("Your Password is : " + l.getPassword());
+                System.out.println("\n馆长 " + n + " 创建成功。");
+                System.out.println("\n您的ID是: " + l.getID());
+                System.out.println("您的密码是: " + l.getPassword());
             }
         }
 
-        //If borrower is to be created
+        // 创建借阅者
         else
         {
             Borrower b = new Borrower(-1,n,address,phone);
             addBorrower(b);
-            System.out.println("\nBorrower with name " + n + " created successfully.");
+            System.out.println("\n借阅者 " + n + " 创建成功。");
 
-            System.out.println("\nYour ID is : " + b.getID());
-            System.out.println("Your Password is : " + b.getPassword());
+            System.out.println("\n您的ID是: " + b.getID());
+            System.out.println("您的密码是: " + b.getPassword());
         }
     }
 
 
 
+    /**
+     * 创建图书
+     */
     public void createBook(String title, String subject, String author)
     {
-        Book b = new Book(-1,title,subject,author,false);
+        // ✅ 已修复：使用String.valueOf将-1转换为字符串作为ISBN
+        Book b = new Book(String.valueOf(-1),title,subject,author,false);
 
         addBookinLibrary(b);
 
-        System.out.println("\nBook with Title " + b.getTitle() + " is successfully created.");
+        System.out.println("\n图书《" + b.getTitle() + "》创建成功。");
     }
 
 
 
-    // Called when want an access to Portal
+    /**
+     * 登录验证
+     */
     public Person login()
     {
         Scanner input = new Scanner(System.in);
@@ -521,18 +527,16 @@ public class Library {
         }
         catch (java.util.InputMismatchException e)
         {
-            System.out.println("\nInvalid Input");
+            System.out.println("\n输入无效");
         }
 
-        System.out.println("Enter Password: ");
+        System.out.println("输入密码: ");
         password = input.next();
 
-        for (int i = 0; i < persons.size(); i++)
-        {
-            if (persons.get(i).getID() == id && persons.get(i).getPassword().equals(password))
-            {
-                System.out.println("\nLogin Successful");
-                return persons.get(i);
+        for (Person person : persons) {
+            if (person.getID() == id && person.getPassword().equals(password)) {
+                System.out.println("\n登录成功");
+                return person;
             }
         }
 
@@ -540,25 +544,27 @@ public class Library {
         {
             if (librarian.getID() == id && librarian.getPassword().equals(password))
             {
-                System.out.println("\nLogin Successful");
+                System.out.println("\n登录成功");
                 return librarian;
             }
         }
 
-        System.out.println("\nSorry! Wrong ID or Password");
+        System.out.println("\n抱歉！ID或密码错误");
         return null;
     }
 
 
-    // History when a Book was Issued and was Returned!
+    /**
+     * 查看借阅历史
+     */
     public void viewHistory()
     {
         if (!loans.isEmpty())
         {
-            System.out.println("\nIssued Books are: ");
+            System.out.println("\n借阅记录: ");
 
             System.out.println("------------------------------------------------------------------------------------------------------------------------------------------------------");
-            System.out.println("No.\tBook's Title\tBorrower's Name\t  Issuer's Name\t\tIssued Date\t\t\tReceiver's Name\t\tReturned Date\t\tFine Paid");
+            System.out.println("序号\t书名\t\t借阅者\t\t  经办人\t\t借出日期\t\t\t接收人\t\t归还日期\t\t罚款已缴");
             System.out.println("------------------------------------------------------------------------------------------------------------------------------------------------------");
 
             for (int i = 0; i < loans.size(); i++)
@@ -575,54 +581,15 @@ public class Library {
             }
         }
         else
-            System.out.println("\nNo issued books.");
+            System.out.println("\n无借阅记录。");
     }
 
-
-
-
-
-
-
-
-
-
     //---------------------------------------------------------------------------------------//
-    /*--------------------------------IN- COLLABORATION WITH DATA BASE------------------------------------------*/
+    /*--------------------------------与数据库协作------------------------------------------*/
 
-    // Making Connection With Database
-//    public Connection makeConnection()
-//    {
-//        try
-//        {
-//            String host = "jdbc:mysql://localhost:3306/library";
-//            String uName = "root";
-//            String uPass= "123456";
-//            Connection con = DriverManager.getConnection( host, uName, uPass );
-//            return con;
-//        }
-//        catch ( SQLException err )
-//        {
-//            System.out.println( err.getMessage( ) );
-//            return null;
-//        }
-//    }
-//    public Connection makeConnection()
-//    {
-//        try
-//        {
-//            String host = "jdbc:mysql://localhost:3306/library?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
-//            String uName = "root";
-//            String uPass = "123456";
-//            Connection con = DriverManager.getConnection( host, uName, uPass );
-//            return con;
-//        }
-//        catch ( SQLException err )
-//        {
-//            System.out.println( err.getMessage( ) );
-//            return null;
-//        }
-//    }
+    /**
+     * 建立数据库连接
+     */
     public Connection makeConnection()
     {
         try
@@ -635,51 +602,46 @@ public class Library {
         }
         catch ( SQLException err )
         {
-            err.printStackTrace();  // 这会打印完整的错误堆栈
-            System.out.println("SQL Error: " + err.getMessage());
+            err.printStackTrace();  // 打印完整的错误堆栈
+            System.out.println("SQL 错误: " + err.getMessage());
             return null;
         }
     }
-    // Loading all info in code via Database.
+    
+    /**
+     * 从数据库加载所有数据到内存
+     */
     public void populateLibrary(Connection con) throws SQLException, IOException
     {
             Library lib = this;
             Statement stmt = con.createStatement( );
 
-            /* --- Populating Book ----*/
+            /* --- 加载图书数据 ----*/
             String SQL = "SELECT * FROM BOOK";
             ResultSet rs = stmt.executeQuery( SQL );
 
             if(!rs.next())
             {
-               System.out.println("\nNo Books Found in Library");
+               System.out.println("\n图书馆中没有图书");
             }
             else
             {
-                int maxID = 0;
-
                 do
                 {
-                    if(rs.getString("TITLE") !=null && rs.getString("AUTHOR")!=null && rs.getString("SUBJECT")!=null && rs.getInt("ID")!=0)
+                    if(rs.getString("TITLE") !=null && rs.getString("AUTHOR")!=null && rs.getString("SUBJECT")!=null && rs.getString("ISBN")!=null)
                     {
                         String title=rs.getString("TITLE");
                         String author=rs.getString("AUTHOR");
                         String subject=rs.getString("SUBJECT");
-                        int id= rs.getInt("ID");
+                        String isbn=rs.getString("ISBN");
                         boolean issue=rs.getBoolean("IS_ISSUED");
-                        Book b = new Book(id,title,subject,author,issue);
+                        Book b = new Book(isbn,title,subject,author,issue);
                         addBookinLibrary(b);
-
-                        if (maxID < id)
-                            maxID = id;
                     }
                 }while(rs.next());
-
-                // setting Book Count
-                Book.setIDCount(maxID);
             }
 
-            /* ----Populating Clerks----*/
+            /* ----加载职员数据----*/
 
             SQL="SELECT ID,PNAME,ADDRESS,PASSWORD,PHONE_NO,SALARY,DESK_NO FROM PERSON INNER JOIN CLERK ON ID=C_ID INNER JOIN STAFF ON S_ID=C_ID";
 
@@ -687,7 +649,7 @@ public class Library {
 
             if(!rs.next())
             {
-               System.out.println("No clerks Found in Library");
+               System.out.println("图书馆中没有职员");
             }
             else
             {
@@ -707,13 +669,13 @@ public class Library {
 
             }
 
-            /*-----Populating Librarian---*/
+            /*-----加载馆长数据---*/
             SQL="SELECT ID,PNAME,ADDRESS,PASSWORD,PHONE_NO,SALARY,OFFICE_NO FROM PERSON INNER JOIN LIBRARIAN ON ID=L_ID INNER JOIN STAFF ON S_ID=L_ID";
 
             rs=stmt.executeQuery(SQL);
             if(!rs.next())
             {
-               System.out.println("No Librarian Found in Library");
+               System.out.println("图书馆中没有馆长");
             }
             else
             {
@@ -733,7 +695,7 @@ public class Library {
 
             }
 
-            /*---Populating Borrowers (partially)!!!!!!--------*/
+            /*---加载借阅者数据（部分）--------*/
 
             SQL="SELECT ID,PNAME,ADDRESS,PASSWORD,PHONE_NO FROM PERSON INNER JOIN BORROWER ON ID=B_ID";
 
@@ -741,7 +703,7 @@ public class Library {
 
             if(!rs.next())
             {
-               System.out.println("No Borrower Found in Library");
+               System.out.println("图书馆中没有借阅者");
             }
             else
             {
@@ -759,21 +721,21 @@ public class Library {
 
             }
 
-            /*----Populating Loan----*/
+            /*----加载借阅记录----*/
 
             SQL="SELECT * FROM LOAN";
 
             rs=stmt.executeQuery(SQL);
             if(!rs.next())
             {
-               System.out.println("No Books Issued Yet!");
+               System.out.println("暂无图书被借出！");
             }
             else
             {
                 do
                     {
                         int borid=rs.getInt("BORROWER");
-                        int bokid=rs.getInt("BOOK");
+                        String bookIsbn=rs.getString("BOOK");
                         int iid=rs.getInt("ISSUER");
                         Integer rid=(Integer)rs.getObject("RECEIVER");
                         int rd=0;
@@ -781,7 +743,7 @@ public class Library {
 
                         Date idate=new Date (rs.getTimestamp("ISS_DATE").getTime());
 
-                        if(rid!=null)    // if there is a receiver
+                        if(rid!=null)    // 如果有接收人
                         {
                             rdate=new Date (rs.getTimestamp("RET_DATE").getTime());
                             rd=(int)rid;
@@ -828,10 +790,10 @@ public class Library {
                         }
 
                         set=true;
-                        // If not returned yet...
+                        // 如果尚未归还...
                         if(rid==null)
                         {
-                            s[1]=null;  // no reciever
+                            s[1]=null;  // 无接收人
                             rdate=null;
                         }
                         else
@@ -858,7 +820,7 @@ public class Library {
 
                         for(int k=0;k<books.size() && set;k++)
                         {
-                            if(books.get(k).getID()==bokid)
+                            if(books.get(k).getISBN().equals(bookIsbn))
                             {
                               set=false;
                               Loan l = new Loan(bb,books.get(k),s[0],s[1],idate,rdate,fineStatus);
@@ -869,21 +831,21 @@ public class Library {
                     }while(rs.next());
             }
 
-            /*----Populationg Hold Books----*/
+            /*----加载预约图书记录----*/
 
             SQL="SELECT * FROM ON_HOLD_BOOK";
 
             rs=stmt.executeQuery(SQL);
             if(!rs.next())
             {
-               System.out.println("No Books on Hold Yet!");
+               System.out.println("暂无预约图书！");
             }
             else
             {
                 do
                     {
-                        int borid=rs.getInt("BORROWER");
-                        int bokid=rs.getInt("BOOK");
+                        int borid =rs.getInt("BORROWER");
+                        String bookIsbn=rs.getString("BOOK");
                         Date off=new Date (rs.getDate("REQ_DATE").getTime());
 
                         boolean set=true;
@@ -893,7 +855,7 @@ public class Library {
 
                         for(int i=0;i<persons.size() && set;i++)
                         {
-                            if(persons.get(i).getID()==borid)
+                            if(persons.get(i).getID()== borid)
                             {
                                 set=false;
                                 bb=(Borrower)(persons.get(i));
@@ -906,35 +868,33 @@ public class Library {
 
                         for(int i=0;i<books.size() && set;i++)
                         {
-                            if(books.get(i).getID()==bokid)
+                            if(books.get(i).getISBN().equals(bookIsbn))
                             {
                               set=false;
-                              HoldRequest hbook= new HoldRequest(bb,books.get(i),off);
-                             holdRequestsOperations.addHoldRequest(hbook);
-                             bb.addHoldRequest(hbook);
+                              books.get(i).placeBookOnHold(bb);
                             }
                         }
                         }while(rs.next());
             }
 
-            /* --- Populating Borrower's Remaining Info----*/
+            /* --- 加载借阅者的剩余信息----*/
 
-            // Borrowed Books
+            // 已借图书
             SQL="SELECT ID,BOOK FROM PERSON INNER JOIN BORROWER ON ID=B_ID INNER JOIN BORROWED_BOOK ON B_ID=BORROWER ";
 
             rs=stmt.executeQuery(SQL);
 
             if(!rs.next())
             {
-               System.out.println("No Borrower has borrowed yet from Library");
+               System.out.println("暂无借阅者借书");
             }
             else
             {
 
                 do
                     {
-                        int id=rs.getInt("ID");      // borrower
-                        int bid=rs.getInt("BOOK");   // book
+                        int id=rs.getInt("ID");      // 借阅者
+                        String bookIsbn=rs.getString("BOOK");   // 图书
 
                         Borrower bb=null;
                         boolean set=true;
@@ -958,11 +918,25 @@ public class Library {
 
                         for(int i=0;i<books.size() && set;i++)
                         {
-                            if(books.get(i).getBook().getID()==bid &&books.get(i).getReceiver()==null )
+                            Loan existingLoan = books.get(i);
+                            
+                            if (existingLoan != null 
+                                && existingLoan.getBook() != null 
+                                && existingLoan.getBook().getISBN().equals(bookIsbn)
+                                && existingLoan.getReceiver() == null)
                             {
-                              set=false;
-                              Loan bBook= new Loan(bb,books.get(i).getBook(),books.get(i).getIssuer(),null,books.get(i).getIssuedDate(),null,books.get(i).getFineStatus());
-                              bb.addBorrowedBook(bBook);
+                                set = false;
+                                Loan newLoan = new Loan(
+                                    bb,
+                                    existingLoan.getBook(),
+                                    existingLoan.getIssuer(),
+                                    null,
+                                    existingLoan.getIssuedDate(),
+                                    null,
+                                    existingLoan.getFineStatus()
+                                );
+                                bb.addBorrowedBook(newLoan);
+                                break;
                             }
                         }
 
@@ -971,7 +945,7 @@ public class Library {
 
             ArrayList<Person> persons = lib.getPersons();
 
-            /* Setting Person ID Count */
+            /* 设置人员ID计数器 */
             int max=0;
 
             for(int i=0;i<persons.size();i++)
@@ -984,66 +958,68 @@ public class Library {
     }
 
 
-    // Filling Changes back to Database
+    /**
+     * 将更改保存回数据库
+     */
     public void fillItBack(Connection con) throws SQLException,SQLIntegrityConstraintViolationException
     {
-            /*-----------Loan Table Cleared------------*/
+            /*-----------清空借阅记录表------------*/
 
             String template = "DELETE FROM LIBRARY.LOAN";
             PreparedStatement stmts = con.prepareStatement(template);
 
             stmts.executeUpdate();
 
-            /*-----------Borrowed Books Table Cleared------------*/
+            /*-----------清空已借图书表------------*/
 
             template = "DELETE FROM LIBRARY.BORROWED_BOOK";
             stmts = con.prepareStatement(template);
 
             stmts.executeUpdate();
 
-            /*-----------OnHoldBooks Table Cleared------------*/
+            /*-----------清空预约图书记录表------------*/
 
             template = "DELETE FROM LIBRARY.ON_HOLD_BOOK";
             stmts = con.prepareStatement(template);
 
             stmts.executeUpdate();
 
-            /*-----------Books Table Cleared------------*/
+            /*-----------清空图书表------------*/
 
             template = "DELETE FROM LIBRARY.BOOK";
             stmts = con.prepareStatement(template);
 
             stmts.executeUpdate();
 
-            /*-----------Clerk Table Cleared------------*/
+            /*-----------清空职员表------------*/
 
             template = "DELETE FROM LIBRARY.CLERK";
             stmts = con.prepareStatement(template);
 
             stmts.executeUpdate();
 
-            /*-----------Librarian Table Cleared------------*/
+            /*-----------清空馆长表------------*/
 
             template = "DELETE FROM LIBRARY.LIBRARIAN";
             stmts = con.prepareStatement(template);
 
             stmts.executeUpdate();
 
-            /*-----------Borrower Table Cleared------------*/
+            /*-----------清空借阅者表------------*/
 
             template = "DELETE FROM LIBRARY.BORROWER";
             stmts = con.prepareStatement(template);
 
             stmts.executeUpdate();
 
-            /*-----------Staff Table Cleared------------*/
+            /*-----------清空职员总表------------*/
 
             template = "DELETE FROM LIBRARY.STAFF";
             stmts = con.prepareStatement(template);
 
             stmts.executeUpdate();
 
-            /*-----------Person Table Cleared------------*/
+            /*-----------清空人员表------------*/
 
             template = "DELETE FROM LIBRARY.PERSON";
             stmts = con.prepareStatement(template);
@@ -1052,7 +1028,7 @@ public class Library {
 
             Library lib = this;
 
-        /* Filling Person's Table*/
+        /* 填充人员表*/
         for(int i=0;i<lib.getPersons().size();i++)
         {
             template = "INSERT INTO LIBRARY.PERSON (ID,PNAME,PASSWORD,ADDRESS,PHONE_NO) values (?,?,?,?,?)";
@@ -1067,7 +1043,7 @@ public class Library {
             stmt.executeUpdate();
         }
 
-        /* Filling Clerk's Table and Staff Table*/
+        /* 填充职员表和职员总表*/
         for(int i=0;i<lib.getPersons().size();i++)
         {
             if (lib.getPersons().get(i).getClass().getSimpleName().equals("Clerk"))
@@ -1092,7 +1068,7 @@ public class Library {
 
         }
 
-        if(lib.getLibrarian()!=null)    // if  librarian is there
+        if(lib.getLibrarian()!=null)    // 如果有馆长
             {
             template = "INSERT INTO LIBRARY.STAFF (S_ID,TYPE,SALARY) values (?,?,?)";
             PreparedStatement stmt = con.prepareStatement(template);
@@ -1112,7 +1088,7 @@ public class Library {
             stmt.executeUpdate();
             }
 
-        /* Filling Borrower's Table*/
+        /* 填充借阅者表*/
         for(int i=0;i<lib.getPersons().size();i++)
         {
             if (lib.getPersons().get(i).getClass().getSimpleName().equals("Borrower"))
@@ -1128,13 +1104,13 @@ public class Library {
 
         ArrayList<Book> books = lib.getBooks();
 
-        /*Filling Book's Table*/
+        /*填充图书表*/
         for(int i=0;i<books.size();i++)
         {
             template = "INSERT INTO LIBRARY.BOOK (ID,TITLE,AUTHOR,SUBJECT,IS_ISSUED) values (?,?,?,?,?)";
             PreparedStatement stmt = con.prepareStatement(template);
 
-            stmt.setInt(1,books.get(i).getID());
+            stmt.setString(1,books.get(i).getISBN());
             stmt.setString(2,books.get(i).getTitle());
             stmt.setString(3, books.get(i).getAuthor());
             stmt.setString(4, books.get(i).getSubject());
@@ -1143,7 +1119,7 @@ public class Library {
 
         }
 
-        /* Filling Loan Book's Table*/
+        /* 填充借阅记录表*/
         for(int i=0;i<loans.size();i++)
         {
             template = "INSERT INTO LIBRARY.LOAN(L_ID,BORROWER,BOOK,ISSUER,ISS_DATE,RECEIVER,RET_DATE,FINE_PAID) values (?,?,?,?,?,?,?,?)";
@@ -1151,7 +1127,7 @@ public class Library {
 
             stmt.setInt(1,i+1);
             stmt.setInt(2,loans.get(i).getBorrower().getID());
-            stmt.setInt(3,loans.get(i).getBook().getID());
+            stmt.setString(3,loans.get(i).getBook().getISBN());
             stmt.setInt(4,loans.get(i).getIssuer().getID());
             stmt.setTimestamp(5,new java.sql.Timestamp(loans.get(i).getIssuedDate().getTime()));
             stmt.setBoolean(8,loans.get(i).getFineStatus());
@@ -1170,7 +1146,7 @@ public class Library {
 
         }
 
-        /* Filling On_Hold_ Table*/
+        /* 填充预约图书记录表*/
 
         int x=1;
         for(int i=0;i<lib.getBooks().size();i++)
@@ -1182,7 +1158,7 @@ public class Library {
 
             stmt.setInt(1,x);
             stmt.setInt(3,lib.getBooks().get(i).getHoldRequests().get(j).getBorrower().getID());
-            stmt.setInt(2,lib.getBooks().get(i).getHoldRequests().get(j).getBook().getID());
+            stmt.setString(2,lib.getBooks().get(i).getHoldRequests().get(j).getBook().getISBN());
             stmt.setDate(4,new java.sql.Date(lib.getBooks().get(i).getHoldRequests().get(j).getRequestDate().getTime()));
 
             stmt.executeUpdate();
@@ -1190,23 +1166,8 @@ public class Library {
 
             }
         }
-        /*for(int i=0;i<lib.getBooks().size();i++)
-        {
-            for(int j=0;j<lib.getBooks().get(i).getHoldRequests().size();j++)
-            {
-            template = "INSERT INTO LIBRARY.ON_HOLD_BOOK(REQ_ID,BOOK,BORROWER,REQ_DATE) values (?,?,?,?)";
-            PreparedStatement stmt = con.prepareStatement(template);
 
-            stmt.setInt(1,i+1);
-            stmt.setInt(3,lib.getBooks().get(i).getHoldRequests().get(j).getBorrower().getID());
-            stmt.setInt(2,lib.getBooks().get(i).getHoldRequests().get(j).getBook().getID());
-            stmt.setDate(4,new java.sql.Date(lib.getBooks().get(i).getHoldRequests().get(j).getRequestDate().getTime()));
-
-            stmt.executeUpdate();
-            }
-        }*/
-
-        /* Filling Borrowed Book Table*/
+        /* 填充已借图书表*/
         for(int i=0;i<lib.getBooks().size();i++)
           {
               if(lib.getBooks().get(i).getIssuedStatus()==true)
@@ -1214,13 +1175,13 @@ public class Library {
                   boolean set=true;
                   for(int j=0;j<loans.size() && set ;j++)
                   {
-                      if(lib.getBooks().get(i).getID()==loans.get(j).getBook().getID())
+                      if(Objects.equals(lib.getBooks().get(i).getISBN(), loans.get(j).getBook().getISBN()))
                       {
                           if(loans.get(j).getReceiver()==null)
                           {
                             template = "INSERT INTO LIBRARY.BORROWED_BOOK(BOOK,BORROWER) values (?,?)";
                             PreparedStatement stmt = con.prepareStatement(template);
-                            stmt.setInt(1,loans.get(j).getBook().getID());
+                            stmt.setString(1,loans.get(j).getBook().getISBN());
                             stmt.setInt(2,loans.get(j).getBorrower().getID());
 
                             stmt.executeUpdate();
@@ -1232,10 +1193,10 @@ public class Library {
 
               }
           }
-    } // Filling Done!
+    } // 填充完成！
 
 
 
 
 
-}   // Library Class Closed
+}   // Library类结束
